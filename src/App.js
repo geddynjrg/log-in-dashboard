@@ -1,25 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+import React, { useState, createContext, useContext } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import PersonalInfo from './components/PersonalInfo';
 
-function App() {
+const AuthContext = createContext();
+
+const App = () => {
+  const [user, setUser] = useState(null);
+
+  const login = (username) => {
+    setUser(username);
+  };
+
+  const logout = () => {
+    setUser(null);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthContext.Provider value={{ user, login, logout }}>
+      <Router>
+        <Routes>
+          <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route path="/login" element={<Login onLogin={login} />} />
+          <Route path="/dashboard" element={user ? (<Dashboard username={user} onLogout={logout} />
+            ) : (
+            <Navigate to="/login" />
+          )}/>
+          <Route path="/personal-info" element={user ? (<PersonalInfo username={user} />
+          ) : (
+            <Navigate to="/login" />
+          )}/>
+        </Routes>
+      </Router>
+    </AuthContext.Provider>
   );
-}
+};
 
 export default App;
+
+function useAuth() {
+  return useContext(AuthContext);
+}
+
+export { useAuth };
